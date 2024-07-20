@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="arduinobot">
+
+    <!-- Gazebo ros2_control plugin -->
+    <gazebo>
+      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+        <robot_param>robot_description</robot_param>
+        <robot_param_node>robot_state_publisher</robot_param_node>
+        <parameters>$(find arduinobot_controller)/config/arduinobot_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+    <gazebo reference="base_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="base_plate">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="forward_drive_arm">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="horizontal_arm">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="claw_support">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="horizontal_arm_to_claw_support">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="gripper_right">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="gripper_left">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    
+</robot>
