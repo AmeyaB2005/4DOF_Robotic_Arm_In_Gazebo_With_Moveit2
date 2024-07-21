@@ -6,89 +6,133 @@ A 4 degree-of-freedom robotic arm powered by ROS2 and controlled by Moveit2 and 
 This package contains a URDF model of a 4 DOF robotic arm equipped with a claw for gripping.
 
 
+![Screenshot 2024-07-21 024744](https://github.com/user-attachments/assets/ee37fa76-760b-4946-a7e3-ebb4a4096bac)
 
-![Screenshot 2024-07-10 221005](https://github.com/AmeyaB2005/Mobile_Robot_Base_With_Arm_In_Gazebo/assets/146567207/de42720f-f575-4949-b254-de9a62432eef)
+
 
 
 # Requirements
-The ROS packages of diff_drive_controller,camera_controller ,joint_state_controller and joint_pose_trajectory_controller are required.
+The ROS packages of ros2_control and Moveit2 are required.
 
-For example, you can install these requirements on  Ubuntu 22.04.4 LTS by the following command:<br>
+For example, you can install Moveit2 on  Ubuntu 22.04.4 LTS by the following command:<br>
    
-    sudo apt install ros-humble-gazebo-ros-pkgs
+    sudo apt install ros-humble-moveit
 
 
 
 
 # Repository architecture
 ## Directories
-* my_robot_bringup/
+* arduinobot_bringup/
   
   * launch/ : (optional) contains launch files for starting the simulation / running of the model in gazebo
   * rviz/ : (optional) contains Rviz configuration settings for displaying the robot model
-  * worlds/ : (optional) contains scene/environment files for Gazebo
-
-* my_robot_description/
+  
+* arduinobot_description/
   * launch/ : (optional) contains launch files for starting the simulation / running urdf model and checking the TF's
   * rviz/ : (optional) contains Rviz configuration settings for displaying the robot model
+  * meshes/ : Contains all the STL files of the parts of the arm
+  * models/: contains the world to be loaded in Gazebo
   * urdf/ : (required) contains the files that generate the robot model and provide simulated actuators and sensors
-      * arm.xacro : the xacro file that generates the urdf description file of the arm
-      * arm_gazebo.xacro : contains the Gazebo plugins that provide an interface to control the arm
-      * camera.xacro : contains the Gazebo plugins that provide an interface to control the camera
-      * common_properties.xacro : contains the common properties like different materials and macros for inertia of different geometries
-      * mobile_base.xacro : the xacro file that generates the urdf description file of the mobile base of the robot
-      * mobile_base_gazebo.xacro : contains the Gazebo plugins that provide an interface to control the robot wheels with differential drive
-      * my_robo.urdf.xacro : includes all xacro files which are required for the robot to spawn in gazebo
+      * arduino_ros2_control.xacro : the xacro file that provides control to the arm
+      * arduinobot_gazebo.xacro : contains the Gazebo plugins that provide an interface to control the arm
+     
+      * arduinobot.urdf.xacro : includes all xacro files which are required for the robotic arm to spawn in gazebo
+   
+* arduinobot_moveit/
+
+   * config/ : MoveIt module for motion planning
+   * launch/ : Controlling the arm through Rviz
+
+ * arduinobot_controller/
+
+   * arduinobot_controller/ : Controlling the arm through the MoveIt user interfaces
+   * launch/ : Provides demo for the move group interface
+   * config/ : MoveIt module for motion planning
+  
+* arduinobot_msgs/ : consists of all the actions and services required
+
+   
+
 
 
 # Direct usage
 * Clone this repository into a ROS catkin workspace
 * Build and source the workspace
-* To view this robot model on RViz: $ ros2 launch my_robot_description display.launch.xml
-* To launch this package in test Gazebo world and Rviz: $ ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+* To view this robot model on RViz: $ ros2 launch arduinobot_description display.launch.xml
+* To launch this package in test Gazebo world and Rviz: $ ros2 launch arduinobot_bringup simulated_robot.launch.xml
 
   
 
-# Gazebo Simulation
-Control the robot inside Gazebo and view what it sees in RViz using the following launch file:
+# Moveit
 
-    ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+## Control real-world arm with MoveIt in RViz
+Control the robot inside RViz by launching Moveit using the following launch file:
 
-This will launch the default test world **test_world.world**.
+    ros2 launch arduinobot_moveit moveit.launch.py
 
-To actuate the arm use the following command:
+This will launch RViz and Moveit
 
-    ros2 topic pub -1 /set_joint_trajectory trajectory_msgs/msg/JointTrajectory '{header:{frame_id: base_footprint}, joint_names: [arm_base_forearm_joint, forearm_hand_joint],points: [ {positions: {0.3, 0.4}} ]}'
+There should now be two interactive markers. One marker corresponding to the orange colored arm will be used to set the “Goal State” for motion planning and the other marker corresponding to a green colored arm are used to set the “Start State” for motion planning.
+Now, you can start motion planning with the Arduinobot in the MoveIt RViz Plugin.
 
-Change positions as required.
+* Move the Start State to a desired location.
 
-![Screenshot 2024-07-10 224943](https://github.com/AmeyaB2005/Mobile_Robot_Base_With_Arm_In_Gazebo/assets/146567207/08b0a21f-38fc-453b-95ca-8d53dad455d8)
+* Move the Goal State to another desired location.
+
+* Make sure both states are not in collision with the robot itself.
+
+* In the MotionPlanning window under the Planning tab, press the Plan button and then press execute.
+
+![Screenshot 2024-07-21 114453](https://github.com/user-attachments/assets/58983036-abce-4a08-82fd-fc23bde8bc8a)
+
+You can visually introspect trajectories point by point in RViz.
+
+* From “Panels” menu, select “Trajectory - Trajectory Slider”. You’ll see a new Slider panel on RViz.
+
+* Set your goal pose, then run Plan.
 
 
-To move the mobile base use the following command:
 
-    ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.2}}"
+## Control simulated arm in Gazebo with MoveIt in RViz
+View the robot in Gazebo as well as in RViz with Moveit
 
-Set desired velocity in the x-axis.
+      ros2 launch arduinobot_bringup real_robot.launch.py
 
-# RViz
-View just the robot in RViz.
+![Screenshot 2024-07-21 115341](https://github.com/user-attachments/assets/1b09541a-15b4-40b8-8f1d-ecd9fab3d8e6)
 
-ros2 launch my_robot_description display.launch.xml
+Using this you can visualize the motion.
 
-![Screenshot 2024-07-10 231642](https://github.com/AmeyaB2005/Mobile_Robot_Base_With_Arm_In_Gazebo/assets/146567207/75d8d885-0c5d-47d4-a9cb-0e55ea226a72)
+* Plan the motion by setting the starting and the goal position in Rviz using moveit
+* Then press execute
+* Switch your tab to Gazebo to visualize the motion of the robotic arm as planned.
+
+
+
+
+
+https://github.com/user-attachments/assets/e3aafbdd-e9c9-4c63-b2d7-f539164163ec
+
+
+
+
+
+
+
 
   
 # TF's
 
 
-![Screenshot 2024-07-10 225158](https://github.com/AmeyaB2005/Mobile_Robot_Base_With_Arm_In_Gazebo/assets/146567207/985fa79e-bcd1-4753-867f-87c8f845c97c)
+![Screenshot 2024-07-21 120219](https://github.com/user-attachments/assets/bbce4122-758c-4065-9248-a1bae1add2f4)
+
 
 The tf system in ROS 2 keeps track of multiple coordinate frames and maintains the relationship between them in a tree structure.
 
 # ROS2 Node Graph
 
 
-![Screenshot 2024-07-10 225404](https://github.com/AmeyaB2005/Mobile_Robot_Base_With_Arm_In_Gazebo/assets/146567207/dca4b648-5268-4d6f-b1ea-b2199ebeb245)
+![Screenshot 2024-07-21 121401](https://github.com/user-attachments/assets/bad763ed-f798-4ea9-9784-35dafa53eb38)
+
 
 The ROS 2 Graph​ is a network of ROS 2 elements processing data together at the same time. It encompasses all executables in nodes and the connections between them.
